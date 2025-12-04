@@ -1,8 +1,11 @@
+import OrderReceivedEmail from "@/components/emails/OrderReceivedEmail";
 import { db } from "@/db";
 import { stripe } from "@/lib/stripe";
 import { headers } from "next/headers";
+import { Resend } from "resend";
 import Stripe from "stripe";
 
+const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(req: Request) {
   try {
     const body = await req.text();
@@ -39,35 +42,51 @@ export async function POST(req: Request) {
       const shippingAddress = session.shipping_details?.address || null;
 
       // Update order
-      await db.order.update({
-        where: { id: orderId },
+      const updatedOrder = await db.order.update({
+        where: {
+          id: orderId,
+        },
         data: {
           isPaid: true,
-          shippingAddress: shippingAddress
-            ? {
-                create: {
-                  name: session.customer_details?.name || "",
-                  city: shippingAddress.city || "",
-                  country: shippingAddress.country || "",
-                  postalCode: shippingAddress.postal_code || "",
-                  street: shippingAddress.line1 || "",
-                  state: shippingAddress.state || "",
-                },
-              }
-            : undefined,
-          billingAddress: billingAddress
-            ? {
-                create: {
-                  name: session.customer_details?.name || "",
-                  city: billingAddress.city || "",
-                  country: billingAddress.country || "",
-                  postalCode: billingAddress.postal_code || "",
-                  street: billingAddress.line1 || "",
-                  state: billingAddress.state || "",
-                },
-              }
-            : undefined,
+          shippingAddress: {
+            create: {
+              name: session.customer_details!.name!,
+              city: shippingAddress!.city!,
+              country: shippingAddress!.country!,
+              postalCode: shippingAddress!.postal_code!,
+              street: shippingAddress!.line1!,
+              state: shippingAddress!.state,
+            },
+          },
+          billingAddress: {
+            create: {
+              name: session.customer_details!.name!,
+              city: billingAddress!.city!,
+              country: billingAddress!.country!,
+              postalCode: billingAddress!.postal_code!,
+              street: billingAddress!.line1!,
+              state: billingAddress!.state,
+            },
+          },
         },
+      });
+      await resend.emails.send({
+        from: "CaseCobra <onboarding@resend.dev>",
+        to: ["koushikachar2017@gmail.com"],
+        subject: "Thanks for your order!",
+        react: OrderReceivedEmail({
+          orderId,
+          orderDate: updatedOrder.createdAt.toLocaleDateString(),
+          // @ts-ignore
+          shippingAddress: {
+            name: session.customer_details!.name!,
+            city: shippingAddress!.city!,
+            country: shippingAddress!.country!,
+            postalCode: shippingAddress!.postal_code!,
+            street: shippingAddress!.line1!,
+            state: shippingAddress!.state,
+          },
+        }),
       });
     }
 
