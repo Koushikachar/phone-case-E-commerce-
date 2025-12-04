@@ -1,7 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { steps } from "framer-motion";
-import { li } from "framer-motion/client";
+
 import { usePathname } from "next/navigation";
 import React from "react";
 
