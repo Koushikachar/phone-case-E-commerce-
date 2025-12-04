@@ -71,6 +71,15 @@ export const createCheckoutSession = async ({
     payment_method_types: ["card"],
     mode: "payment",
     shipping_address_collection: { allowed_countries: ["IN"] },
+    shipping_options: [
+      {
+        shipping_rate_data: {
+          display_name: "Standard Shipping",
+          type: "fixed_amount",
+          fixed_amount: { amount: 0, currency: "inr" },
+        },
+      },
+    ],
     metadata: {
       userId: user.id,
       orderId: order.id,

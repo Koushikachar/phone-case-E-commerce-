@@ -20,7 +20,11 @@ export async function POST(req: Request) {
     );
 
     if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
+      const session = event.data.object as Stripe.Checkout.Session & {
+        shipping_details?: {
+          address?: Stripe.Address;
+        };
+      };
 
       // Validate metadata
       const userId = session.metadata?.userId;
@@ -31,8 +35,8 @@ export async function POST(req: Request) {
       }
 
       // Extract addresses safely
-      const billingAddress = session.customer_details!.address;
-      const shippingAddress = session.shipping_details!.address;
+      const billingAddress = session.customer_details?.address || null;
+      const shippingAddress = session.shipping_details?.address || null;
 
       // Update order
       await db.order.update({
