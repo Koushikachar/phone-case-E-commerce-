@@ -26,7 +26,7 @@ const OrderReceivedEmail = ({
   const baseUrl =
     process.env.NODE_ENV === "development"
       ? "http://localhost:3000"
-      : "https://phone-case-e-commerce-h92j.vercel.app";
+      : "https://phone-case-e-commerce.vercel.app";
 
   return (
     <Html>
