@@ -13,16 +13,25 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-
+interface OrderReceivedEmailProps {
+  orderId: string;
+  orderDate: string;
+  shippingAddress: {
+    name: string;
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+    state: string | null;
+    id?: string; // Make optional
+    phoneNumber?: string | null; // Make optional
+  };
+}
 const OrderReceivedEmail = ({
   shippingAddress,
   orderId,
   orderDate,
-}: {
-  shippingAddress: ShippingAddress;
-  orderId: string;
-  orderDate: string;
-}) => {
+}: OrderReceivedEmailProps) => {
   const baseUrl =
     process.env.NODE_ENV === "development"
       ? "http://localhost:3000"
